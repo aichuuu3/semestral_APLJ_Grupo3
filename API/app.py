@@ -1,15 +1,16 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_mysqldb import MySQL
 from flask_restx import Api
 from flask_cors import CORS
 from config import DB_CONFIG
-from usuario import crearUsuario
-from tipoUsuario import crearTipoUsuario
-from taller import crearTallercito
-from pagarCuota import crearPago
-from libro import crearLibro
-from membresia import crearMembresia
-from miembro import crearMiembro
+from miembro.usuario import crearUsuario
+from miembro.tipoUsuario import crearTipoUsuario
+from miembro.pagarCuota import crearPago
+from miembro.membresia import crearMembresia
+from miembro.miembro import crearMiembro
+#Para comprobar cositas esos 2 ultimos imports -- se puede quitar si quieres
+import os
+import sys
 
 app = Flask(__name__)
 app.config.update(DB_CONFIG)
@@ -44,6 +45,16 @@ def test_db():
         return {'mensaje': 'Conexión a la base de datos exitosa', 'status': 'OK'}
     except Exception as e:
         return {'error': f'Error de conexión a la base de datos: {str(e)}', 'status': 'ERROR'}, 500
+
+#Endpoint para obtener información sobre el entorno de la aplicación -- si quieres lo puedes quitar jeejeje
+@app.route('/whoami')
+def whoami():
+    return jsonify({
+        'pid': os.getpid(),
+        'cwd': os.getcwd(),
+        'python_executable': sys.executable,
+        'app_file': __file__
+    })
 
 # Configurar CORS para permitir peticiones desde cualquier origen //
 CORS(app, resources={

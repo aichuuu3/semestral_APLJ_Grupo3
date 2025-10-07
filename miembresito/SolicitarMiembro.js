@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 //agrega imagen de fondo al modal
                 const modalContent = modal.querySelector('.modal-content');
                 if (modalContent) {
-                    modalContent.style.backgroundImage = "url('img/imagen1.png')";
+                    modalContent.style.backgroundImage = "url('../img/imagen1.png')";
                     modalContent.style.backgroundSize = "cover";
                     modalContent.style.backgroundPosition = "center";
                     modalContent.style.backgroundRepeat = "no-repeat";
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function cargarFormularioRegistro() {
         try {
             console.log('Cargando formulario de registro...');
-            const response = await fetch('miembro/SolicitarMiembro.html');
+            const response = await fetch('../miembresito/SolicitarMiembro.html');
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -78,14 +78,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!document.querySelector('link[href*="SM.css"]')) {
                     const link = document.createElement('link');
                     link.rel = 'stylesheet';
-                    link.href = 'miembro/SM.css';
+                    link.href = '../miembresito/SM.css';
                     document.head.appendChild(link);
                 }
                 
                 // Cargar script de validación
                 if (!document.querySelector('script[src*="validacion.js"]')) {
                     const script = document.createElement('script');
-                    script.src = 'miembro/validacion.js';
+                    script.src = '../miembresito/validacion.js';
                     script.onload = function() {
                         initializeRegistroForm();
                     };
@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function cargarFormularioLogin() {
         try {
             console.log('Cargando formulario de login...');
-            const response = await fetch('miembro/loginsito.html');
+            const response = await fetch('../miembresito/loginsito.html');
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -126,14 +126,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!document.querySelector('link[href*="loginsito.css"]')) {
                     const link = document.createElement('link');
                     link.rel = 'stylesheet';
-                    link.href = 'miembro/loginsito.css';
+                    link.href = '../miembresito/loginsito.css';
                     document.head.appendChild(link);
                 }
                 
                 // Cargar script de validación si no está cargado
                 if (!document.querySelector('script[src*="validacion.js"]')) {
                     const script = document.createElement('script');
-                    script.src = 'miembro/validacion.js';
+                    script.src = '../miembresito/validacion.js';
                     script.onload = function() {
                         initializeLoginForm();
                     };
