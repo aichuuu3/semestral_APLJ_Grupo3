@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generar Informe</title>
+    <link rel="stylesheet" href="generarInformes.css">
+</head>
+<body>
+    <div class="gen-inf">
+      <div class="gen-inf2">
+  <form class="login-form" onsubmit="event.preventDefault(); generarInforme(1);">
+          <h2>Generar Informe Anual</h2>
+          <label for="anio">Seleccione el año:</label>
+          <select id="anio"></select>
+          <button type="submit" style="margin-top: 15px;">Crear</button>
+          <div id="resultadoInforme" style="margin-top: 30px;"></div>
+        </form>
+      </div>
+    </div>
+
+<script src="generarInformes.js"></script>
+<script src="../../javacito.js"></script>
+</body>
+</html>
