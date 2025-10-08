@@ -1,6 +1,6 @@
 from flask import Flask, jsonify
 from flask_mysqldb import MySQL
-from flask_restx import Api
+from flask_restx import Api, Namespace
 from flask_cors import CORS
 from config import DB_CONFIG
 from miembro.usuario import crearUsuario
@@ -8,6 +8,9 @@ from miembro.tipoUsuario import crearTipoUsuario
 from miembro.pagarCuota import crearPago
 from miembro.membresia import crearMembresia
 from miembro.miembro import crearMiembro
+from Admin import admin
+from Admin import libros
+from Admin import talleres
 #Para comprobar cositas esos 2 ultimos imports -- se puede quitar si quieres
 import os
 import sys
@@ -27,7 +30,10 @@ api.add_namespace(crearUsuario(mysql), path='/usuarios')
 api.add_namespace(crearTipoUsuario(mysql), path='/tipoUsuario')
 api.add_namespace(crearMembresia(mysql), path='/membresia')
 api.add_namespace(crearPago(mysql), path='/pagarCuota')
-api.add_namespace(crearMiembro(mysql), path='/miembro')  
+api.add_namespace(crearMiembro(mysql), path='/miembro')
+api.add_namespace(admin.register_admin_routes(app), path='/admin')
+api.add_namespace(libros.register_libro_routes(app), path='/libros')
+api.add_namespace(talleres.register_taller_routes(app), path='/talleres')
 
 #Endpoint simple para probar que la api este funcando jejeje
 @app.route('/test')
