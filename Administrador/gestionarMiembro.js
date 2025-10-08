@@ -28,19 +28,32 @@ document.addEventListener('DOMContentLoaded', function() {
     if (btnConsultar) {
         btnConsultar.addEventListener('click', function(e) {
             e.preventDefault();
-            console.log('🔍 CLIC EN CONSULTAR');
-            buscarUsuarioPorCedula();
+            console.log('CLIC EN CONSULTAR');
+            buscarUsuarioPorCedula().then(() => {
+                if (btnActualizar) {
+                    btnActualizar.style.display = 'block'; // Mostrar el botón después de consultar
+                }
+            });
         });
         console.log('✅ Listener agregado al botón CONSULTAR');
     }
     
+    // Ocultar el botón "Actualizar Usuario" inicialmente
+    if (btnActualizar) {
+        btnActualizar.style.display = 'none';
+    }
+    
+    // Modificación para limpiar los inputs y ocultar el botón "Actualizar Usuario" después de actualizar
     if (btnActualizar) {
         btnActualizar.addEventListener('click', function(e) {
             e.preventDefault();
             console.log('🔄 CLIC EN ACTUALIZAR');
-            actualizarUsuario();
+            actualizarUsuario().then(() => {
+                limpiarFormulario(); // Limpiar los campos de entrada
+                btnActualizar.style.display = 'none'; // Ocultar el botón "Actualizar Usuario"
+            });
         });
-        console.log('✅ Listener agregado al botón ACTUALIZAR');
+        console.log('✅ Listener modificado para el botón ACTUALIZAR');
     }
     
     // Función para cargar solicitudes desde la API
@@ -108,19 +121,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Guardar idSolicitud para actualizaciones
                 window.currentSolicitudId = usuario.idSolicitud;
                 
-                alert(`✅ Usuario encontrado: ${usuario.nombre}`);
+                alert(`Usuario encontrado: ${usuario.nombre}`);
                 
             } else if (response.status === 404) {
-                alert('❌ Usuario no encontrado con esa cédula');
+                alert('Usuario no encontrado con esa cédula');
                 limpiarFormulario();
             } else {
                 const error = await response.json();
-                alert('❌ Error: ' + (error.error || 'No se pudo buscar el usuario'));
+                alert('Error: ' + (error.error || 'No se pudo buscar el usuario'));
             }
             
         } catch (error) {
             console.error('Error:', error);
-            alert('❌ Error de conexión al buscar usuario');
+            alert('Error de conexión al buscar usuario');
         }
     }
     
@@ -136,17 +149,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const estadoSeleccionado = estadoSelect.value;
         
         if (!cedula) {
-            alert('❌ Debe buscar un usuario primero ingresando la cédula y haciendo clic en Consultar');
+            alert('Debe buscar un usuario primero ingresando la cédula y haciendo clic en Consultar');
             return;
         }
         
         if (!nombre || !telefono || !correo) {
-            alert('❌ Todos los campos (nombre, teléfono y correo) son requeridos');
+            alert('Todos los campos (nombre, teléfono y correo) son requeridos');
             return;
         }
         
         try {
-            // 1️⃣ ACTUALIZAR DATOS DEL USUARIO
+            //ACTUALIZAR DATOS DEL USUARIO
             const responseUsuario = await fetch(`http://localhost:5000/membresia/actualizar-usuario/${cedula}`, {
                 method: 'PUT',
                 headers: {
@@ -162,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!responseUsuario.ok) {
                 const error = await responseUsuario.json();
                 console.error('Error del servidor:', error);
-                alert('❌ Error: ' + (error.error || 'No se pudo actualizar el usuario'));
+                alert('Error: ' + (error.error || 'No se pudo actualizar el usuario'));
                 return;
             }
             
@@ -182,17 +195,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (responseEstado.ok) {
                     if (estadoSeleccionado.toLowerCase() === 'aceptada') {
-                        mensaje += '\n🎉 Membresía ACTIVADA automáticamente';
+                        mensaje += '\nMembresía ACTIVADA automáticamente';
                     } else if (estadoSeleccionado.toLowerCase() === 'rechazada') {
-                        mensaje += '\n❌ Membresía mantenida como INACTIVA';
+                        mensaje += '\nMembresía mantenida como INACTIVA';
                     } else if (estadoSeleccionado.toLowerCase() === 'pendiente') {
-                        mensaje += '\n⏳ Solicitud marcada como PENDIENTE';
+                        mensaje += '\nSolicitud marcada como PENDIENTE';
                     }
                 } else {
-                    mensaje += '\n⚠️ Usuario actualizado pero hubo error al cambiar el estado de la solicitud';
+                    mensaje += '\nUsuario actualizado pero hubo error al cambiar el estado de la solicitud';
                 }
             } else if (estadoSeleccionado && !window.currentSolicitudId) {
-                mensaje += '\n⚠️ No se puede cambiar el estado: este usuario no tiene solicitud de membresía';
+                mensaje += '\nNo se puede cambiar el estado: este usuario no tiene solicitud de membresía';
             }
             
             alert(mensaje);
@@ -203,7 +216,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
         } catch (error) {
             console.error('Error de conexión:', error);
-            alert('❌ Error de conexión al actualizar usuario');
+            alert('Error de conexión al actualizar usuario');
         }
     }
     
@@ -215,19 +228,36 @@ document.addEventListener('DOMContentLoaded', function() {
         window.currentSolicitudId = null;
     }
     
+    // Ajuste adicional para mostrar "Sin membresía" también en solicitudes rechazadas
+    function getEstadoClass(estadoMiembro, estadoSolicitud) {
+        if (estadoSolicitud?.toLowerCase() === 'pendiente' || estadoSolicitud?.toLowerCase() === 'rechazada') {
+            return 'sin-membresia'; // Mostrar "Sin membresía" para solicitudes pendientes o rechazadas
+        }
+
+        switch (estadoMiembro?.toLowerCase()) {
+            case 'activo': return 'activo';
+            case 'inactivo': return 'inactivo';
+            default: return 'sin-membresia';
+        }
+    }
+
     function mostrarSolicitudesEnTabla(solicitudes) {
         const tbody = document.querySelector('.tabla-solicitudes tbody');
-        
+
         if (!tbody) {
             console.error('No se encontró el tbody de la tabla');
             return;
         }
-        
+
         tbody.innerHTML = '';
-        
+
         solicitudes.forEach(solicitud => {
+            const estadoMiembroClass = getEstadoClass(solicitud.estadoMiembro, solicitud.estadoSolicitud);
+            const estadoMiembroTexto = (solicitud.estadoSolicitud?.toLowerCase() === 'pendiente' || solicitud.estadoSolicitud?.toLowerCase() === 'rechazada')
+                ? 'Sin membresía'
+                : solicitud.estadoMiembro;
+
             const fila = document.createElement('tr');
-            
             fila.innerHTML = `
                 <td>${solicitud.nombre}</td>
                 <td>${solicitud.cedula}</td>
@@ -235,24 +265,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${solicitud.correo}</td>
                 <td>${solicitud.tipoUsuario || 'Miembro'}</td>
                 <td>${solicitud.fechaSolicitud || 'N/A'}</td>
-                <td><span class="estado ${getEstadoClass(solicitud.estadoMiembro)}">${solicitud.estadoMiembro}</span></td>
+                <td><span class="estado ${estadoMiembroClass}">${estadoMiembroTexto}</span></td>
                 <td>
                     <span class="estado ${getEstadoSolicitudClass(solicitud.estadoSolicitud)}">${solicitud.estadoSolicitud}</span>
                 </td>
             `;
-            
+
             tbody.appendChild(fila);
         });
-        
+
         console.log('Tabla actualizada con', solicitudes.length, 'solicitudes');
-    }
-    
-    function getEstadoClass(estado) {
-        switch (estado?.toLowerCase()) {
-            case 'activo': return 'activo';
-            case 'inactivo': return 'inactivo';
-            default: return 'pendiente';
-        }
     }
     
     function getEstadoSolicitudClass(estado) {
@@ -293,12 +315,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             if (response.ok) {
-                let mensaje = '✅ Estado actualizado correctamente';
+                let mensaje = 'Estado actualizado correctamente';
                 
                 if (nuevoEstado.toLowerCase() === 'aceptada') {
-                    mensaje += '\n🎉 Membresía ACTIVADA automáticamente';
+                    mensaje += '\nMembresía ACTIVADA automáticamente';
                 } else if (nuevoEstado.toLowerCase() === 'rechazada') {
-                    mensaje += '\n❌ Membresía mantenida como INACTIVA';
+                    mensaje += '\nMembresía mantenida como INACTIVA';
                 }
                 
                 alert(mensaje);
@@ -308,12 +330,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 
             } else {
                 const error = await response.json();
-                alert('❌ Error: ' + (error.error || 'No se pudo actualizar el estado'));
+                alert('Error: ' + (error.error || 'No se pudo actualizar el estado'));
             }
             
         } catch (error) {
             console.error('Error:', error);
-            alert('❌ Error de conexión al actualizar estado');
+            alert('Error de conexión al actualizar estado');
         }
     }
     
@@ -339,16 +361,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 
                 if (response.ok) {
-                    alert('✅ Estado actualizado correctamente');
+                    alert('Estado actualizado correctamente');
                     cargarSolicitudes();
                 } else {
                     const error = await response.json();
-                    alert('❌ Error: ' + (error.error || 'No se pudo actualizar'));
+                    alert('Error: ' + (error.error || 'No se pudo actualizar'));
                 }
                 
             } catch (error) {
                 console.error('Error:', error);
-                alert('❌ Error de conexión');
+                alert('Error de conexión');
             }
         }
     };
@@ -372,7 +394,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const cedula = document.getElementById('cedula').value.trim();
             
             if (nuevoEstado && cedula && !window.currentSolicitudId) {
-                alert('❌ Este usuario no tiene una solicitud de membresía registrada');
+                alert('Este usuario no tiene una solicitud de membresía registrada');
                 this.value = '';
             }
         });
@@ -386,6 +408,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 limpiarFormulario();
                 document.getElementById('cedula').value = '';
                 window.currentSolicitudId = null;
+            }
+        });
+    }
+    
+    // Validación para el estado de miembro
+    const estadoMiembroSelect = document.getElementById('estadoMiembro');
+    if (estadoMiembroSelect) {
+        estadoMiembroSelect.addEventListener('change', function() {
+            const estadoMiembro = this.value;
+            const estadoSolicitud = document.getElementById('estado').value;
+
+            if (estadoMiembro === 'Activo' && (estadoSolicitud === 'Rechazada' || estadoSolicitud === 'Pendiente')) {
+                console.log('No se puede activar la membresía si la solicitud no está aceptada.');
+                alert('No se puede activar la membresía si la solicitud no está aceptada.');
+                this.value = '';
+            } else if (estadoMiembro === 'Inactivo' && estadoSolicitud !== 'Aceptada') {
+                console.log('No se puede poner el estado de miembro como inactivo si la solicitud no está aceptada.');
+                alert('No se puede poner el estado de miembro como inactivo si la solicitud no está aceptada.');
+                this.value = '';
             }
         });
     }

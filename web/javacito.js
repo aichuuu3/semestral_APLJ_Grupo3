@@ -22,51 +22,37 @@ const SistemaLogin = {
 
     // Cerrar sesión
     cerrarSesion: function() {
-        // Obtener datos del usuario antes de eliminar la sesión
         const usuario = this.obtenerUsuarioSesion();
-        
-        // Eliminar la sesión
         sessionStorage.removeItem('usuarioSesion');
         this.ocultarBarraSesion();
-        
-        // Redirección según el tipo de usuario - Solo para Administrador y Contador
+
         if (usuario && usuario.idTipoUsuario) {
             const tipoUsuario = parseInt(usuario.idTipoUsuario);
-            
-            // Solo bloquear navegación para Administrador (1) y Contador (2)
+
+            // Solo bloquear navegación y redirigir para Administrador (1) y Contador (2)
             if (tipoUsuario === 1 || tipoUsuario === 2) {
-                // Marcar que debe bloquear navegación
                 sessionStorage.setItem('bloquearNavegacion', 'true');
-                // Redirigir
-                window.location.replace('../../inicio.html');
+                window.location.replace('../web/inicio.html');
             }
-            // Miembros (3) y No Miembros (4) pueden navegar normalmente
         }
     },
 
     // Bloquear completamente la navegación hacia atrás
     bloquearNavegacionAtras: function() {
-        // Limpiar el historial del navegador
-        history.pushState(null, null, window.location.href);
-        
-        // Detectar cuando intentan ir hacia atrás y redirigir
-        window.addEventListener('popstate', function(event) {
+        if (sessionStorage.getItem('bloquearNavegacion') === 'true') {
+            sessionStorage.removeItem('bloquearNavegacion');
             history.pushState(null, null, window.location.href);
-        });
-        
-        // Método adicional: Deshabilitar teclas de navegación
-        document.addEventListener('keydown', function(event) {
-            // Bloquear Alt + Flecha Izquierda (Atrás)
-            if (event.altKey && event.keyCode === 37) {
-                event.preventDefault();
-                return false;
-            }
-            // Bloquear Backspace fuera de inputs
-            if (event.keyCode === 8 && !event.target.matches('input, textarea')) {
-                event.preventDefault();
-                return false;
-            }
-        });
+
+            window.addEventListener('popstate', function(event) {
+                history.pushState(null, null, window.location.href);
+            });
+
+            document.addEventListener('keydown', function(event) {
+                if ((event.altKey && event.keyCode === 37) || (event.keyCode === 8 && !event.target.matches('input, textarea'))) {
+                    event.preventDefault();
+                }
+            });
+        }
     },
 
     // Mostrar la barra de sesión
@@ -272,22 +258,9 @@ const SistemaLogin = {
 // Inicializar el sistema al cargar la página
 document.addEventListener('DOMContentLoaded', function() {
     SistemaLogin.init();
-    
-    // Verificar si debe bloquear navegación (para admins/contadores)
+
     if (sessionStorage.getItem('bloquearNavegacion') === 'true') {
-        sessionStorage.removeItem('bloquearNavegacion'); // Limpiar la marca
-        
-        // Ejecutar el script de bloqueo guardado
-        const scriptBloqueo = sessionStorage.getItem('scriptBloqueo');
-        if (scriptBloqueo) {
-            sessionStorage.removeItem('scriptBloqueo');
-            // Crear y ejecutar el script de bloqueo
-            const script = document.createElement('script');
-            script.textContent = scriptBloqueo;
-            document.head.appendChild(script);
-        }
-        
-        // También aplicar el bloqueo nativo
+        sessionStorage.removeItem('bloquearNavegacion');
         SistemaLogin.bloquearNavegacionAtras();
     }
 });

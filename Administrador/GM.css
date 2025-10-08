@@ -157,6 +157,14 @@ body {
   border: 1px solid #f5c6cb;
 }
 
+/* Estilo para el estado "Sin membresía" */
+.estado.sin-membresia {
+  background: #e0e0e0;
+  color: #6c757d;
+  border: 1px solid #d6d6d6;
+  font-style: italic;
+}
+
 .tabla-container::-webkit-scrollbar {
   width: 8px;
 }

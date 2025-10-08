@@ -406,9 +406,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     let urlRedireccion = 'inicio.html'; // Default
                     
                     if (tipoUsuario === 1) {
-                        urlRedireccion = 'API/Administrador/MenuAdmin.html';
+                        urlRedireccion = '../Administrador/MenuAdmin.html';
                     } else if (tipoUsuario === 2) {
-                        urlRedireccion = 'Contador/generarInformes.html';
+                        urlRedireccion = '../contador/generarInformes.html';
                     } else if (tipoUsuario === 3) {
                         urlRedireccion = 'inicio.html';
                     }
