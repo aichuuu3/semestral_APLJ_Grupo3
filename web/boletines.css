@@ -35,6 +35,16 @@ header {
     min-height: 100vh;
 }
 
+footer {
+    background: #333;
+    color: #ccc;
+    text-align: center;
+    padding: 20px;
+    font-size: 0.9rem;
+    width: 100%;
+    margin-top: auto;
+}
+
 h1 {
     font-size: 3rem;
     margin-bottom: 20px;
