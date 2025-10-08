@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     async function cargarTalleres() {
         try {
-            const res = await fetch("http://127.0.0.1:5000/api/talleres");
+            const res = await fetch("http://127.0.0.1:5000/talleres");
             const talleres = await res.json();
 
             tbody.innerHTML = ""; // limpiar tabla
@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     const id = this.getAttribute("data-id");
                     if (confirm("¿Seguro que quieres eliminar este taller?")) {
                         try {
-                            await fetch(`http://127.0.0.1:5000/api/talleres/${id}`, {
+                            await fetch(`http://127.0.0.1:5000/talleres/${id}`, {
                                 method: "DELETE"
                             });
                             alert("Taller eliminado con éxito");

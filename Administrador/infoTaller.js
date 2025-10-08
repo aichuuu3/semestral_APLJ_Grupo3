@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("form-taller");
 
     // Cargar datos del taller
-    fetch(`http://127.0.0.1:5000/api/talleres/${idTaller}`)
+    fetch(`http://127.0.0.1:5000/talleres/${idTaller}`)
         .then(res => res.json())
         .then(taller => {
             document.getElementById("nombre").value = taller.nombre;
@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Validar título único (consulta a la API)
         try {
-            const res = await fetch("http://127.0.0.1:5000/api/talleres");
+            const res = await fetch("http://127.0.0.1:5000/talleres");
             const talleres = await res.json();
 
             const repetido = talleres.some(
@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // Ya con las validaciones correctas, actualizamos
-        fetch(`http://127.0.0.1:5000/api/talleres/${idTaller}`, {
+        fetch(`http://127.0.0.1:5000/talleres/${idTaller}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(datos)

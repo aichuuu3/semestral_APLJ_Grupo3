@@ -2,7 +2,7 @@
 async function obtenerTipoTaller(idTaller) {
     try {
         // Corregir la URL para que apunte al endpoint correcto
-        const response = await fetch(`http://127.0.0.1:5000/talleres/tipo/${idTaller}`);
+        const response = await fetch(`http://127.0.0.1:5000/talleres/${idTaller}`);
         
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);

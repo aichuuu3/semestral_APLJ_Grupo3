@@ -70,7 +70,7 @@ if (fechaIngresada < hoy) {
     }
 
     // Validar duplicados en la BD
-    const res = await fetch("http://127.0.0.1:5000/api/libros");
+    const res = await fetch("http://127.0.0.1:5000/libros");
     const libros = await res.json();
 
     const tituloExistente = libros.some(libro => libro.titulo.toLowerCase() === datos.titulo.toLowerCase());
@@ -104,7 +104,7 @@ form.addEventListener('submit', async function(e) {
 
     if (!await validarLibro(datos)) return;
 
-    fetch("http://127.0.0.1:5000/api/libros", {
+    fetch("http://127.0.0.1:5000/libros", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datos)

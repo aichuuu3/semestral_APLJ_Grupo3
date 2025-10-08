@@ -35,10 +35,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
-        console.log('✅ Listener agregado al botón CONSULTAR');
+        console.log('Listener agregado al botón CONSULTAR');
     }
     
-    // Ocultar el botón "Actualizar Usuario" inicialmente
+    // Oculta el botón "Actualizar Usuario" inicialmente
     if (btnActualizar) {
         btnActualizar.style.display = 'none';
     }
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 btnActualizar.style.display = 'none'; // Ocultar el botón "Actualizar Usuario"
             });
         });
-        console.log('✅ Listener modificado para el botón ACTUALIZAR');
+        console.log('Listener modificado para el botón ACTUALIZAR');
     }
     
     // Función para cargar solicitudes desde la API
@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const cedulaInput = document.getElementById('cedula');
         const cedula = cedulaInput.value.trim();
         
-        console.log('🔍 EJECUTANDO BUSCAR USUARIO CON CÉDULA:', cedula);
+        console.log('EJECUTANDO BUSCAR USUARIO CON CÉDULA:', cedula);
         
         if (!cedula) {
             alert('Por favor ingrese una cédula');
@@ -117,6 +117,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     estadoSelect.value = '';
                 }
+                // Llenar select de Estado Miembro (si viene en la respuesta) y validar consistencia
+                const estadoMiembroSelect = document.getElementById('estadoMiembro');
+                if (estadoMiembroSelect) {
+                    console.log('API: usuario.estadoMiembro raw =', usuario.estadoMiembro);
+
+                    const raw = (usuario.estadoMiembro || '').toString().trim();
+                    const normalized = normalize(raw);
+                    const solNorm = normalize(usuario.estadoSolicitud || '');
+
+                    // Mapear a opciones
+                    let mapped = '';
+                    if (normalized === 'activo') mapped = 'Activo';
+                    else if (normalized === 'inactivo') mapped = 'Inactivo';
+                    else mapped = 'Sin membresía';
+
+                    // Validaciones según reglas
+                    if (solNorm === 'aceptada') {
+                        if (mapped !== 'Activo') {
+                            console.warn(`Inconsistencia detectada al consultar cedula=${usuario.cedula}: solicitud ACEPTADA pero estadoMiembro='${raw}'. Forzando 'Activo' en UI.`);
+                            estadoMiembroSelect.value = 'Activo';
+                        } else {
+                            estadoMiembroSelect.value = mapped;
+                        }
+                    } else if (solNorm === 'rechazada' || solNorm === 'pendiente') {
+                        if (mapped === 'Activo' || mapped === 'Inactivo') {
+                            console.warn(`Inconsistencia detectada al consultar cedula=${usuario.cedula}: solicitud ${solNorm.toUpperCase()} pero estadoMiembro='${raw}'. Forzando 'Sin membresía' en UI.`);
+                        }
+                        estadoMiembroSelect.value = 'Sin membresía';
+                    } else {
+                        // Si no hay solicitud conocida, asignar lo mapeado
+                        estadoMiembroSelect.value = mapped;
+                    }
+                }
                 
                 // Guardar idSolicitud para actualizaciones
                 window.currentSolicitudId = usuario.idSolicitud;
@@ -139,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // FUNCIÓN ACTUALIZAR USUARIO
     async function actualizarUsuario() {
-        console.log('🔄 FUNCIÓN ACTUALIZAR USUARIO EJECUTÁNDOSE');
+        console.log('FUNCIÓN ACTUALIZAR USUARIO EJECUTÁNDOSE');
         
         const cedula = document.getElementById('cedula').value.trim();
         const nombre = document.getElementById('nombre').value.trim();
@@ -179,7 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            let mensaje = '✅ Usuario actualizado correctamente';
+            let mensaje = 'Usuario actualizado correctamente';
             
             // 2️⃣ ACTUALIZAR ESTADO DE SOLICITUD (si está seleccionado y existe solicitud)
             if (estadoSeleccionado && window.currentSolicitudId) {
@@ -241,6 +274,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Normalizar un string de estado (quita acentos, trim, lower)
+    function normalize(str) {
+        if (!str && str !== '') return '';
+        return str.toString().trim().normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+    }
+
     function mostrarSolicitudesEnTabla(solicitudes) {
         const tbody = document.querySelector('.tabla-solicitudes tbody');
 
@@ -251,30 +290,81 @@ document.addEventListener('DOMContentLoaded', function() {
 
         tbody.innerHTML = '';
 
-        solicitudes.forEach(solicitud => {
-            const estadoMiembroClass = getEstadoClass(solicitud.estadoMiembro, solicitud.estadoSolicitud);
-            const estadoMiembroTexto = (solicitud.estadoSolicitud?.toLowerCase() === 'pendiente' || solicitud.estadoSolicitud?.toLowerCase() === 'rechazada')
-                ? 'Sin membresía'
-                : solicitud.estadoMiembro;
+        // Filtrar solicitudes: solo mostrar aquellas con estado pendiente/aceptada/rechazada
+        const estadosValidos = ['pendiente', 'aceptada', 'rechazada'];
+        const solicitudesFiltradas = solicitudes.filter(solicitud => {
+            const est = (solicitud.estadoSolicitud || '').toString().toLowerCase();
+            return estadosValidos.includes(est);
+        });
+
+        if (solicitudesFiltradas.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 20px; color: #555;">No hay solicitudes para mostrar</td>
+                </tr>
+            `;
+            console.log('No hay solicitudes válidas para mostrar');
+            return;
+        }
+
+        solicitudesFiltradas.forEach(solicitud => {
+            // Validaciones de consistencia entre estadoSolicitud y estadoMiembro
+            const estSol = normalize(solicitud.estadoSolicitud || '');
+            const estMie = normalize(solicitud.estadoMiembro || '');
+
+            let displayEstadoMiembro = solicitud.estadoMiembro || 'Sin membresía';
+            let estadoMiembroClass = getEstadoClass(solicitud.estadoMiembro, solicitud.estadoSolicitud);
+
+            // Regla 1: si solicitud = aceptada, el miembro debe estar ACTIVO. Si no, log y forzar 'Activo'.
+            if (estSol === 'aceptada') {
+                if (estMie !== 'activo') {
+                    console.warn(`Inconsistencia detectada para cedula=${solicitud.cedula}: solicitud ACEPTADA pero estadoMiembro='${solicitud.estadoMiembro}'. Forzando 'Activo'.`);
+                    displayEstadoMiembro = 'Activo';
+                    estadoMiembroClass = 'activo';
+                }
+            }
+
+            // Regla 2: si solicitud = rechazada, el miembro no puede estar Activado ni Inactivo -> forzar Sin membresía
+            if (estSol === 'rechazada') {
+                if (estMie === 'activo' || estMie === 'inactivo') {
+                    console.warn(`Inconsistencia detectada para cedula=${solicitud.cedula}: solicitud RECHAZADA pero estadoMiembro='${solicitud.estadoMiembro}'. Forzando 'Sin membresía'.`);
+                    displayEstadoMiembro = 'Sin membresía';
+                    estadoMiembroClass = 'sin-membresia';
+                }
+            }
+
+            // Regla 3: si solicitud = pendiente, el miembro no puede estar activado ni inactivo -> forzar Sin membresía
+            if (estSol === 'pendiente') {
+                if (estMie === 'activo' || estMie === 'inactivo') {
+                    console.warn(`Inconsistencia detectada para cedula=${solicitud.cedula}: solicitud PENDIENTE pero estadoMiembro='${solicitud.estadoMiembro}'. Forzando 'Sin membresía'.`);
+                    displayEstadoMiembro = 'Sin membresía';
+                    estadoMiembroClass = 'sin-membresia';
+                } else {
+                    // si no hay miembro válido, mostrar sin membresía
+                    displayEstadoMiembro = 'Sin membresía';
+                    estadoMiembroClass = 'sin-membresia';
+                }
+            }
 
             const fila = document.createElement('tr');
+            // Mostrar solo las columnas necesarias (sin Tipo Usuario)
+            const estadoSolicitudTexto = solicitud.estadoSolicitud || 'N/A';
             fila.innerHTML = `
                 <td>${solicitud.nombre}</td>
                 <td>${solicitud.cedula}</td>
                 <td>${solicitud.telefono}</td>
                 <td>${solicitud.correo}</td>
-                <td>${solicitud.tipoUsuario || 'Miembro'}</td>
                 <td>${solicitud.fechaSolicitud || 'N/A'}</td>
-                <td><span class="estado ${estadoMiembroClass}">${estadoMiembroTexto}</span></td>
+                <td><span class="estado ${estadoMiembroClass}">${displayEstadoMiembro}</span></td>
                 <td>
-                    <span class="estado ${getEstadoSolicitudClass(solicitud.estadoSolicitud)}">${solicitud.estadoSolicitud}</span>
+                    <span class="estado ${estadoSolicitudTexto === 'N/A' ? 'na' : getEstadoSolicitudClass(solicitud.estadoSolicitud)}">${estadoSolicitudTexto}</span>
                 </td>
             `;
 
             tbody.appendChild(fila);
         });
 
-        console.log('Tabla actualizada con', solicitudes.length, 'solicitudes');
+        console.log('Tabla actualizada con', solicitudesFiltradas.length, 'solicitudes mostradas (filtradas)');
     }
     
     function getEstadoSolicitudClass(estado) {
@@ -291,7 +381,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (tbody) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="8" style="text-align: center; color: red; padding: 20px;">
+                    <td colspan="7" style="text-align: center; color: red; padding: 20px;">
                         ${mensaje}
                     </td>
                 </tr>
@@ -418,6 +508,14 @@ document.addEventListener('DOMContentLoaded', function() {
         estadoMiembroSelect.addEventListener('change', function() {
             const estadoMiembro = this.value;
             const estadoSolicitud = document.getElementById('estado').value;
+
+            // Regla: si la solicitud está ACEPTADA, el estadoMiembro no puede ser 'Sin membresía'
+            if (estadoSolicitud === 'Aceptada' && (estadoMiembro === 'Sin membresía' || estadoMiembro === '' )) {
+                console.warn('No se permite dejar Sin membresía cuando la solicitud está Aceptada. Forzando a Activo.');
+                alert('No se puede dejar Sin membresía para una solicitud Aceptada. Se asignará ACTIVO.');
+                this.value = 'Activo';
+                return;
+            }
 
             if (estadoMiembro === 'Activo' && (estadoSolicitud === 'Rechazada' || estadoSolicitud === 'Pendiente')) {
                 console.log('No se puede activar la membresía si la solicitud no está aceptada.');

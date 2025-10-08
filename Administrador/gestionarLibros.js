@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const tbody = document.getElementById("tabla-libros-body");
 
     // Obtener libros desde la API
-    fetch("http://127.0.0.1:5000/api/libros")
+    fetch("http://127.0.0.1:5000/libros")
         .then(res => res.json())
         .then(libros => {
             tbody.innerHTML = ""; // limpiar tabla

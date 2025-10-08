@@ -65,7 +65,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 10;
-  width: 12.5%; /* 100% / 8 columnas */
+  width: 14.2857%; /* 100% / 7 columnas */
   border-right: 1px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -74,7 +74,7 @@ body {
   border-bottom: 1px solid #eee;
   border-right: 1px solid #f0f0f0;
   font-size: 10px;
-  width: 12.5%; /* 100% / 8 columnas */
+  width: 14.2857%; /* 100% / 7 columnas */
   text-align: center;
   word-wrap: break-word;
   vertical-align: middle;
@@ -116,14 +116,14 @@ body {
   text-overflow: ellipsis;
 }
 
-.tabla-solicitudes th:nth-child(6),
-.tabla-solicitudes td:nth-child(6) {
+.tabla-solicitudes th:nth-child(5),
+.tabla-solicitudes td:nth-child(5) {
   font-size: 10px; /* Fecha */
   font-family: monospace;
 }
 
-.tabla-solicitudes td:nth-child(7),
-.tabla-solicitudes td:nth-child(8) {
+.tabla-solicitudes td:nth-child(6),
+.tabla-solicitudes td:nth-child(7) {
   padding: 8px 4px; /* Estados */
 }
 
@@ -163,6 +163,14 @@ body {
   color: #6c757d;
   border: 1px solid #d6d6d6;
   font-style: italic;
+}
+
+/* Estado N/A (sin solicitud) */
+.estado.na {
+  background: #e9ecef;
+  color: #495057;
+  border: 1px solid #d6d8db;
+  font-style: normal;
 }
 
 .tabla-container::-webkit-scrollbar {
