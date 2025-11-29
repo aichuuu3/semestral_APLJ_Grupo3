@@ -12,17 +12,102 @@
   <form class="login-form" onsubmit="event.preventDefault(); procesarPago();">
           <h2>Pagar Cuotas</h2>
           <label for="monto">Monto a pagar:</label>
-          <input type="number" id="monto" required>
+          <input type="number" id="monto" min="0" step="0.01" required>
+          <div id="montoError" style="color:#b00;margin-top:8px;display:none;">El monto no puede ser negativo.</div>
           <label for="metodoPago">Método de pago:</label>
           <select id="metodoPago" required>
             <option value="">Seleccione un método</option>
             <option value="tarjeta">Tarjeta de crédito/débito</option>
-            <option value="paypal">PayPal</option>
+            <option value="yappy">Yappy</option>
             <option value="transferencia">Transferencia bancaria</option>
           </select>
           <button type="submit" style="margin-top: 15px;">Pagar</button>
           <div id="resultadoPago" style="margin-top: 30px;"></div>
         </form>
+        <!-- Modal de confirmación de pago -->
+        <div id="pagoModal" style="display:none; position:fixed; left:0; top:0; right:0; bottom:0; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
+          <div style="background:#fff; padding:20px; border-radius:6px; max-width:320px; width:90%; margin:0 auto; text-align:center;">
+            <h3 id="pagoModalTitulo">Pago exitoso</h3>
+            <p id="pagoModalMensaje" style="margin:12px 0;">Se ha pagado: $0.00</p>
+            <button id="pagoModalOk" style="padding:8px 14px;">OK</button>
+          </div>
+        </div>
+        <script>
+          (function() {
+            // Esperamos al DOM completo para obtener elementos que están después del script original
+            document.addEventListener('DOMContentLoaded', () => {
+              const monto = document.getElementById('monto');
+              const montoError = document.getElementById('montoError');
+              const resultadoPago = document.getElementById('resultadoPago');
+              const pagoModal = document.getElementById('pagoModal');
+              const pagoModalMensaje = document.getElementById('pagoModalMensaje');
+              const pagoModalOk = document.getElementById('pagoModalOk');
+
+              function showError(show) {
+                montoError.style.display = show ? 'block' : 'none';
+              }
+
+              function clampValue() {
+                const val = parseFloat(monto.value);
+                if (!isNaN(val) && val < 0) {
+                  monto.value = String(Math.abs(val));
+                  showError(true);
+                } else if (monto.value === '') {
+                  showError(false);
+                } else {
+                  showError(false);
+                }
+              }
+
+              monto.addEventListener('input', () => {
+                if (monto.value.startsWith('-')) {
+                  monto.value = monto.value.replace(/-/g, '');
+                }
+                clampValue();
+              });
+              monto.addEventListener('wheel', (e) => { e.preventDefault(); }, { passive: false });
+
+              function openModal(amount) {
+                pagoModalMensaje.textContent = 'Se ha pagado: $' + Number(amount).toFixed(2) + '\n\nPago exitoso';
+                pagoModal.style.display = 'flex';
+              }
+
+              function closeModal() {
+                pagoModal.style.display = 'none';
+              }
+
+              pagoModalOk.addEventListener('click', () => {
+                closeModal();
+              });
+
+              // Interceptar/añadir procesarPago
+              const originalProcesar = window.procesarPago;
+              window.procesarPago = function() {
+                const v = parseFloat(monto.value);
+                if (isNaN(v) || v < 0) {
+                  showError(true);
+                  monto.focus();
+                  return;
+                }
+                showError(false);
+                // Mostrar modal con la cantidad y mensaje de éxito
+                openModal(v);
+
+                // Llamar a la implementación original si existe
+                if (typeof originalProcesar === 'function') {
+                  try {
+                    return originalProcesar();
+                  } catch (e) {
+                    console.error('Error en procesarPago original:', e);
+                  }
+                }
+
+                // Comportamiento por defecto: mostrar en el contenedor de resultado
+                resultadoPago.innerHTML = '<p>Pago procesado: $' + v.toFixed(2) + '</p>';
+              };
+            });
+          })();
+        </script>
       </div>
     </div>
 </body>
