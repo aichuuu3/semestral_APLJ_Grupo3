@@ -169,11 +169,18 @@ def crearMembresia(mysql):
                     cur.close()
                     return {'error': f'Usuario con cédula {cedula} no encontrado'}, 404
                 
-                # Actualizar datos del usuario
-                cur.execute(
-                    "UPDATE usuario SET nombre = %s, telefono = %s, correo = %s WHERE cedula = %s",
-                    (data['nombre'], data['telefono'], data['correo'], cedula)
-                )
+                # Si se proporciona clave, actualizar con clave
+                if data.get('clave'):
+                    cur.execute(
+                        "UPDATE usuario SET nombre = %s, telefono = %s, correo = %s, clave = %s WHERE cedula = %s",
+                        (data['nombre'], data['telefono'], data['correo'], data['clave'], cedula)
+                    )
+                else:
+                    # Si no se proporciona clave, actualizar sin cambiar clave
+                    cur.execute(
+                        "UPDATE usuario SET nombre = %s, telefono = %s, correo = %s WHERE cedula = %s",
+                        (data['nombre'], data['telefono'], data['correo'], cedula)
+                    )
                 
                 mysql.connection.commit()
                 cur.close()

@@ -113,4 +113,28 @@ def register_libro_routes(app):
 
             return {"mensaje": "Libro actualizado correctamente"}
 
+        def delete(self, idLibro):
+            try:
+                conexion = obtener_conexion()
+                cursor = conexion.cursor()
+                
+                cursor.execute("DELETE FROM Libro WHERE idLibro=%s", (idLibro,))
+                conexion.commit()
+                
+                if cursor.rowcount > 0:
+                    mensaje = {"mensaje": "Libro eliminado correctamente"}
+                    codigo = 200
+                else:
+                    mensaje = {"mensaje": "Libro no encontrado"}
+                    codigo = 404
+                
+                cursor.close()
+                conexion.close()
+                
+                return mensaje, codigo
+                
+            except Exception as e:
+                print(f"Error al eliminar libro: {e}")
+                return {"mensaje": f"Error al eliminar libro: {str(e)}"}, 500
+
     return api

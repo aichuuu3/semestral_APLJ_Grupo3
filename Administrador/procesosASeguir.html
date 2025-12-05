@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="gestionarLibros.css">
+  <link rel="stylesheet" href="sidebar.css">
+  
+  <title>Admin - Procesos a Seguir</title>
+  <style>
+    .estado-badge {
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 12px;
+      display: inline-block;
+    }
+    
+    .estado-badge.pendiente {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    
+    .estado-badge.aceptada {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    .estado-badge.rechazada {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    .filtros {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .filtros button {
+      padding: 10px 20px;
+      border: 2px solid #4fc3f7;
+      background-color: white;
+      color: #4fc3f7;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+
+    .filtros button.activo {
+      background-color: #4fc3f7;
+      color: white;
+    }
+
+    .filtros button:hover {
+      background-color: #4fc3f7;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Barra lateral -->
+    <nav class="sidebar">
+      <h2>Administración</h2>
+      <ul>
+        <li><a href="MenuAdmin.html">Inicio</a></li>
+        <li><a href="GestionarMiembro.html">Membresías</a></li>
+        <li><a href="procesosASeguir.html">Procesos a Seguir</a></li>
+        <li><a href="gestionarTalleres.html">Talleres</a></li>
+        <li><a href="gestionarLibros.html">Libros</a></li>
+      </ul>
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="content">
+      <h1>Procesos a Seguir</h1>
+
+      <!-- Botones de acción -->
+      <div class="acciones">
+        <button onclick="location.href='MenuAdmin.html'" class="btn-regresar">
+          ← Regresar
+        </button>
+      </div>
+
+      <!-- Filtros por estado -->
+      <div class="filtros">
+        <button class="filtro-btn activo" data-filtro="todos">Todos</button>
+        <button class="filtro-btn" data-filtro="pendiente">Pendientes</button>
+        <button class="filtro-btn" data-filtro="aceptada">Aceptadas</button>
+        <button class="filtro-btn" data-filtro="rechazada">Rechazadas</button>
+      </div>
+
+      <!-- Tabla de solicitudes -->
+      <div class="tabla-container">
+        <div class="tabla-scroll">
+          <table class="tabla-libros">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Cédula</th>
+                <th>Teléfono</th>
+                <th>Correo</th>
+                <th>Fecha Solicitud</th>
+                <th>Estado Solicitud</th>
+                <th>Estado Miembro</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-procesos-body">
+              <!-- Se llenará dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="procesosASeguir.js"></script>
+</body>
+</html>

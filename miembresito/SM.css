@@ -64,6 +64,31 @@ body {
   border-color: #007bff;
   box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
 }
+
+.campo.checkbox {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.campo.checkbox input[type="checkbox"] {
+  width: auto;
+  height: auto;
+  margin-right: 8px;
+  margin-top: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.label-terminos {
+  display: block;
+  margin: 0;
+  font-weight: normal;
+  font-size: 13px;
+  color: #555;
+  line-height: 1.4;
+  cursor: pointer;
+}
     
 button {
   background-color: #007bff;

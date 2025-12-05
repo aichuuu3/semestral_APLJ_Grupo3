@@ -274,14 +274,34 @@ def crearUsuario(mysql):
                 return {'error': f'Error al actualizar usuario: {str(e)}'}, 500
 
         def delete(self, cedula):
-            """Eliminar usuario"""
+            """Eliminar usuario y todos sus registros relacionados"""
             try:
                 cur = mysql.connection.cursor()
+                
+                # Primero obtener el idSolicitud si existe
+                cur.execute("SELECT idSolicitud FROM solicitudmembresia WHERE cedula = %s", (cedula,))
+                solicitud = cur.fetchone()
+                idSolicitud = solicitud[0] if solicitud else None
+                
+                # Eliminar de tabla miembro (que referencia idSolicitud)
+                # Solo si existen registros
+                if idSolicitud:
+                    cur.execute("DELETE FROM miembro WHERE idSolicitud = %s", (idSolicitud,))
+                
+                # Eliminar directamente por cedula también (por si acaso)
+                cur.execute("DELETE FROM miembro WHERE cedula = %s", (cedula,))
+                
+                # Eliminar de tabla solicitudmembresia
+                cur.execute("DELETE FROM solicitudmembresia WHERE cedula = %s", (cedula,))
+                
+                # Finalmente eliminar el usuario
                 cur.execute("DELETE FROM usuario WHERE cedula = %s", (cedula,))
+                
                 mysql.connection.commit()
                 cur.close()
-                return {'mensaje': 'Usuario eliminado correctamente'}
+                return {'mensaje': 'Usuario y todos sus registros relacionados han sido eliminados correctamente'}, 200
             except Exception as e:
+                mysql.connection.rollback()
                 return {'error': f'Error al eliminar usuario: {str(e)}'}, 500
 
     @api.route('/solicitar-membresia')

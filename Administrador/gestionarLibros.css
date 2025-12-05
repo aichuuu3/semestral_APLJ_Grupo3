@@ -52,7 +52,8 @@ body {
 
 .form-buttons {
   display: flex;
-  justify-content: space-between; /* botones en extremos opuestos */
+  justify-content: space-between;
+  gap: 10px;
   margin-top: 20px;
 }
 
@@ -94,13 +95,12 @@ body {
   background: #95a5a6;
   color: white;
   border: none;
-  padding: 8px 30px;
+  padding: 10px 15px;
   border-radius: 5px;
   cursor: pointer;
   font-size: 14px;
   font-weight: bold;
-  display: block;
-  margin: 20px auto 0;
+  transition: background-color 0.3s ease;
 }
 
 .btn-crear {
@@ -142,6 +142,8 @@ body {
 
 .tabla-scroll {
   overflow-x: auto;
+  overflow-y: auto;
+  max-height: 500px;
   border-radius: 8px;
 }
 
@@ -202,6 +204,12 @@ body {
 
 .btn-agregar:hover {
   background-color: #45a049;
+}
+
+.acciones {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
 }
 
 .form-title {

@@ -20,8 +20,8 @@ function validarTelefono(telefono) {
 
 // Función para validar contraseña
 function validarContrasena(contrasena) {
-    // Mínimo 8 caracteres, al menos una mayúscula, una minúscula y un número
-    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/;
+    // Mínimo 8 caracteres, al menos una mayúscula, una minúscula, un número y un carácter especial
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[a-zA-Z\d@$!%*?&]{8,}$/;
     return regex.test(contrasena);
 }
 
@@ -69,7 +69,12 @@ function validarSolicitudMembresia(datos) {
     if (!datos.clave || datos.clave.trim() === '') {
         errores.push('La contraseña es obligatoria');
     } else if (!validarContrasena(datos.clave)) {
-        errores.push('La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número');
+        errores.push('La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial (@$!%*?&)');
+    }
+    
+    // Validar términos y condiciones
+    if (!datos.terminos || datos.terminos !== 'on') {
+        errores.push('Debes aceptar los términos y condiciones para continuar');
     }
     
     return {

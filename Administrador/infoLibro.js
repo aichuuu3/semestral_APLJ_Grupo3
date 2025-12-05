@@ -76,14 +76,15 @@ function validarLibro(datos) {
 }
 
 // Traer datos del libro al cargar
-fetch(`http://127.0.0.1:5000/api/libros/${idLibro}`)
+fetch(`http://127.0.0.1:5000/libros/${idLibro}`)
   .then(res => res.json())
   .then(libro => {
-    document.querySelector('input[name="titulo"]').value = libro.titulo;
-    document.querySelector('input[name="autor"]').value = libro.autor;
-    document.querySelector('input[name="isbn"]').value = libro.isbn;
+    console.log('Libro cargado:', libro);
+    document.querySelector('input[name="titulo"]').value = libro.titulo || '';
+    document.querySelector('input[name="autor"]').value = libro.autor || '';
+    document.querySelector('input[name="isbn"]').value = libro.isbn || '';
 
-    // Ajustar fecha a formato YYYY-MM-DD y guardar original
+    // Ajustar fecha a formato YYYY-MM-DD
     if (libro.fechaIngreso) {
         const fecha = new Date(libro.fechaIngreso);
         const yyyy = fecha.getFullYear();
@@ -91,12 +92,11 @@ fetch(`http://127.0.0.1:5000/api/libros/${idLibro}`)
         const dd = String(fecha.getDate()).padStart(2, '0');
         const fechaFormatted = `${yyyy}-${mm}-${dd}`;
         document.querySelector('input[name="fechaIngreso"]').value = fechaFormatted;
-        fechaOriginal = fechaFormatted; // guardamos para validación
     }
 
-    document.querySelector('input[name="cantidad"]').value = libro.cantidad;
-    document.querySelector('select[name="categoria"]').value = libro.categoria;
-    document.querySelector('select[name="estado"]').value = libro.estado;
+    document.querySelector('input[name="cantidad"]').value = libro.cantidad || '';
+    document.querySelector('select[name="categoria"]').value = libro.categoria || '';
+    document.querySelector('select[name="estado"]').value = libro.estado || 'disponible';
 
     // Inicialmente deshabilitar campos
     inputs.forEach(input => input.setAttribute('disabled', true));
@@ -130,19 +130,20 @@ btnGuardar.addEventListener('click', () => {
   // Validaciones
   if (!validarLibro(datos)) return;
 
-  console.log("Enviando PUT a:", `http://127.0.0.1:5000/api/libros/${idLibro}`);
-console.log("Datos a enviar:", datos);
-
   // Enviar PUT a la API
-  fetch(`http://127.0.0.1:5000/api/libros/${idLibro}`, {
+  fetch(`http://127.0.0.1:5000/libros/${idLibro}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(datos)
   })
   .then(res => res.json())
   .then(resp => {
-    alert(resp.mensaje);
+    console.log('Respuesta:', resp);
+    alert(resp.mensaje || 'Libro actualizado exitosamente');
     window.location.href = 'gestionarLibros.html';
   })
-  .catch(err => console.error('Error al actualizar libro:', err));
+  .catch(err => {
+    console.error('Error al actualizar libro:', err);
+    alert('Error al actualizar el libro');
+  });
 });
