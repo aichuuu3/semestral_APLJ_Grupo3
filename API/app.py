@@ -18,13 +18,19 @@ import sys
 app = Flask(__name__)
 app.config.update(DB_CONFIG)
 
-CORS(app)
-
+CORS(app, resources={
+    r"/*": {
+        "origins": "*",
+        "methods": ["GET", "POST", "PUT", "DELETE"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
 mysql = MySQL(app)
 
 api = Api(app, doc='/docs/', title='API APLJ',
           description='API para gestión de usuarios, talleres y libros')
 
+app.url_map.strict_slashes = False
 # Namespaces
 api.add_namespace(crearUsuario(mysql), path='/usuarios')
 api.add_namespace(crearTipoUsuario(mysql), path='/tipoUsuario')
@@ -63,13 +69,7 @@ def whoami():
     })
 
 # Configurar CORS para permitir peticiones desde cualquier origen //
-CORS(app, resources={
-    r"/*": {
-        "origins": "*",
-        "methods": ["GET", "POST", "PUT", "DELETE"],
-        "allow_headers": ["Content-Type", "Authorization"]
-    }
-})
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

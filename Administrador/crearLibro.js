@@ -23,38 +23,39 @@ async function validarLibro(datos) {
         return false;
     }
 
-    // ISBN (7 a 12 dígitos)
+    // ISBN (7 a 13 dígitos)
     const isbnPattern = /^\d{7,13}$/;
     if (!isbnPattern.test(datos.isbn)) {
-        alert("ISBN inválido. Debe contener entre 1 a 7 dígitos.");
+        // ⚠️ CORRECCIÓN del mensaje de alerta para coincidir con el patrón regex
+        alert("ISBN inválido. Debe contener entre 7 y 13 dígitos.");
         return false;
     }
 
     // Fecha de ingreso
-    // Fecha de ingreso (hoy o mayor)
-if (!datos.fechaIngreso) {
-    alert("La fecha de ingreso es obligatoria.");
-    return false;
-}
+    if (!datos.fechaIngreso) {
+        alert("La fecha de ingreso es obligatoria.");
+        return false;
+    }
+    
+    // ⚠️ CORRECCIÓN de la validación de fecha
+    const fechaIngresada = new Date(datos.fechaIngreso);
+    // Para normalizar a medianoche (ignorar la hora), tomamos solo la parte de la fecha.
+    fechaIngresada.setHours(0, 0, 0, 0); 
+    
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0); 
 
-// Convertir string "YYYY-MM-DD" a Date correctamente
-const partes = datos.fechaIngreso.split('-'); // ["2025","09","26"]
-const fechaIngresada = new Date(partes[0], partes[1]-1, partes[2]); // mes 0-indexed
-fechaIngresada.setHours(0,0,0,0); // normalizar a medianoche
-
-const hoy = new Date();
-hoy.setHours(0,0,0,0); // normalizar hoy
-
-if (fechaIngresada < hoy) {
-    alert("⚠️ La fecha de ingreso no puede ser menor a la fecha actual.");
-    return false;
-}
+    if (fechaIngresada < hoy) {
+        alert("⚠️ La fecha de ingreso no puede ser anterior a la fecha actual.");
+        return false;
+    }
 
 
     // Cantidad
     const cantidadNum = Number(datos.cantidad);
-    if (cantidadNum < 0 || !Number.isInteger(cantidadNum)) {
-        alert("La cantidad debe ser un número entero no negativo.");
+    if (cantidadNum <= 0 || !Number.isInteger(cantidadNum)) {
+        // La cantidad debe ser positiva, no negativa
+        alert("La cantidad debe ser un número entero positivo (mayor a cero).");
         return false;
     }
 
@@ -69,19 +70,27 @@ if (fechaIngresada < hoy) {
         datos.estado = "disponible";
     }
 
-    // Validar duplicados en la BD
-    const res = await fetch("http://127.0.0.1:5000/libros");
-    const libros = await res.json();
+    // Validar duplicados en la BD (Este fetch también necesita CORS)
+    try {
+        const res = await fetch("http://127.0.0.1:5000/libros/");
+        if (!res.ok) throw new Error(`Error al cargar libros: ${res.status}`);
+        const libros = await res.json();
 
-    const tituloExistente = libros.some(libro => libro.titulo.toLowerCase() === datos.titulo.toLowerCase());
-    if (tituloExistente) {
-        alert("Ya existe un libro con ese título.");
-        return false;
-    }
+        const tituloExistente = libros.some(libro => libro.titulo && libro.titulo.toLowerCase() === datos.titulo.toLowerCase());
+        if (tituloExistente) {
+            alert("Ya existe un libro con ese título.");
+            return false;
+        }
 
-    const isbnExistente = libros.some(libro => libro.isbn === datos.isbn);
-    if (isbnExistente) {
-        alert("Ya existe un libro con ese ISBN.");
+        const isbnExistente = libros.some(libro => libro.isbn === datos.isbn);
+        if (isbnExistente) {
+            alert("Ya existe un libro con ese ISBN.");
+            return false;
+        }
+    } catch (e) {
+        console.error("Error al verificar duplicados:", e);
+        // Podrías permitir el envío si la verificación falla (o bloquearlo)
+        alert("Error al validar duplicados en el servidor. Intente de nuevo.");
         return false;
     }
 
@@ -92,6 +101,7 @@ if (fechaIngresada < hoy) {
 form.addEventListener('submit', async function(e) {
     e.preventDefault();
 
+    // ⚠️ ATENCIÓN: Asegúrate de que tu HTML tenga inputs con los nombres 'titulo', 'autor' e 'isbn'
     const datos = {
         titulo: form.titulo.value,
         autor: form.autor.value,
@@ -104,15 +114,27 @@ form.addEventListener('submit', async function(e) {
 
     if (!await validarLibro(datos)) return;
 
-    fetch("http://127.0.0.1:5000/libros", {
+    fetch("http://127.0.0.1:5000/libros/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datos)
     })
-    .then(res => res.json())
+    .then(res => {
+        // Manejamos la respuesta, incluso si es un error 4xx o 5xx
+        if (!res.ok) {
+            // Leemos el JSON de error que enviamos desde Flask
+            return res.json().then(error => {
+                throw new Error(error.mensaje || `Error de servidor: ${res.status}`);
+            });
+        }
+        return res.json();
+    })
     .then(resp => {
         alert(resp.mensaje);
         window.location.href = "gestionarLibros.html";
     })
-    .catch(err => console.error("Error al crear libro:", err));
+    .catch(err => {
+        // Mostramos el mensaje de error del servidor o del fetch.
+        alert(`Error al crear libro: ${err.message}`);
+    });
 });
