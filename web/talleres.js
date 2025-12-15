@@ -31,8 +31,8 @@ async function mostrarTipoTaller(idTaller, elementoId) {
 async function cargarTodasLasCategorias() {
     // Lista de IDs de talleres y sus elementos correspondientes
     const talleres = [
-        { id: 1, elementoId: 'categoria-1' },
-        { id: 2, elementoId: 'categoria-2' }
+        { id: 5, elementoId: 'categoria-1' },
+        { id: 6, elementoId: 'categoria-2' }
     ];
 
     // Cargar categorías para todos los talleres

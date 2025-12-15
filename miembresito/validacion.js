@@ -19,11 +19,11 @@ function validarTelefono(telefono) {
 }
 
 // Función para validar contraseña
-function validarContrasena(contrasena) {
+/*function validarContrasena(contrasena) {
     // Mínimo 8 caracteres, al menos una mayúscula, una minúscula, un número y un carácter especial
     const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[a-zA-Z\d@$!%*?&]{8,}$/;
     return regex.test(contrasena);
-}
+}*/
 
 // Función para validar nombre completo
 function validarNombre(nombre) {
@@ -66,11 +66,11 @@ function validarSolicitudMembresia(datos) {
     }
     
     // Validar contraseña
-    if (!datos.clave || datos.clave.trim() === '') {
+    /*if (!datos.clave || datos.clave.trim() === '') {
         errores.push('La contraseña es obligatoria');
     } else if (!validarContrasena(datos.clave)) {
         errores.push('La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial (@$!%*?&)');
-    }
+    }*/
     
     // Validar términos y condiciones
     if (!datos.terminos || datos.terminos !== 'on') {

@@ -1,5 +1,5 @@
 # talleres.py
-from flask import jsonify, request
+from flask import request
 from config import obtener_conexion
 from flask_restx import Namespace, Resource
 
@@ -22,7 +22,7 @@ def register_taller_routes(app):
                 taller['fecha'] = taller['fecha'].strftime('%Y-%m-%d')
                 taller['hora'] = str(taller['hora'])
 
-            return jsonify(talleres)
+            return talleres
 
         def post(self):
             #crear taller
@@ -46,7 +46,7 @@ def register_taller_routes(app):
             conexion.commit()
             cursor.close()
             conexion.close()
-            return jsonify({"mensaje": "Taller creado correctamente"}), 201
+            return {"mensaje": "Taller creado correctamente"}, 201
 
     @api.route("/<int:idTaller>")
     class Taller(Resource):
@@ -60,13 +60,13 @@ def register_taller_routes(app):
             conexion.close()
 
             if not taller:
-                return jsonify({"mensaje": "Taller no encontrado"}), 404
+                return {"mensaje": "Taller no encontrado"}, 404
 
             # Convertir DATE y TIME a string
             taller['fecha'] = taller['fecha'].strftime('%Y-%m-%d')
             taller['hora'] = str(taller['hora'])
 
-            return jsonify(taller)
+            return taller
 
         def put(self, idTaller):
             #actualizar taller
@@ -94,7 +94,7 @@ def register_taller_routes(app):
             cursor.close()
             conexion.close()
 
-            return jsonify({"mensaje": "Taller actualizado correctamente"})
+            return {"mensaje": "Taller actualizado correctamente"}
 
         def delete(self, idTaller):
             #eliminar taller
@@ -104,6 +104,6 @@ def register_taller_routes(app):
             conexion.commit()
             cursor.close()
             conexion.close()
-            return jsonify({"mensaje": "Taller eliminado correctamente"})
+            return {"mensaje": "Taller eliminado correctamente"}
             
     return api
